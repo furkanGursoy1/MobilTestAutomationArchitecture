@@ -1,0 +1,45 @@
+# Starter pipeline
+
+
+
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+stages:
+  - stage: Build
+    displayName: Build image
+    jobs:
+      - job: Build
+        timeoutInMinutes: 90
+        displayName: mobilTestAutomation
+        pool:
+          vmImage: ubuntu-latest
+
+        steps: 
+        
+          - task: Maven@4
+
+            inputs:
+             mavenPomFile: 'pom.xml'
+             testResultsFiles: '**/surefire-reports/TEST-*.xml'
+             javaHomeOption: 'JDKVersion'
+             mavenVersionOption: 'Default'
+             mavenAuthenticateFeed: false
+             effectivePomSkip: false
+             sonarQubeRunAnalysis: false
+
+          - task: Bash@3
+            inputs:
+             targetType: 'inline'
+             script: 'npm install uuid@latest'   
+  
+          - task: PublishCucumberReport@1
+            inputs:
+              jsonDir: './target/'
+              outputPath: './target/cucumber-html-reports'
+              theme: 'hierarchy'
+              reportSuiteAsScenarios: true
